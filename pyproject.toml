@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "digital-forensics"
+version = "0.1.0"
+description = "Image processing pipeline API for digital forensics assessment"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+	"fastapi>=0.116.0",
+	"uvicorn[standard]>=0.35.0",
+	"sqlalchemy>=2.0.38",
+	"pillow>=11.1.0",
+	"python-multipart>=0.0.20",
+]
+
+[project.optional-dependencies]
+ai = [
+	"transformers>=4.48.0",
+	"torch>=2.6.0",
+]
+dev = [
+	"pytest>=8.3.4",
+	"httpx>=0.28.1",
+]
+
+[project.scripts]
+forensics-api = "digital_forensics.api.app:run"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"

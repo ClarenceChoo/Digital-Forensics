@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Pipeline API Tester</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 24px; max-width: 980px; }
+      h1 { margin-bottom: 4px; }
+      .muted { color: #555; margin-bottom: 20px; }
+      .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+      .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+      input[type="text"] { min-width: 280px; padding: 8px; }
+      button { padding: 8px 12px; cursor: pointer; }
+      pre { background: #f7f7f7; border: 1px solid #eee; border-radius: 6px; padding: 12px; overflow: auto; }
+      img { max-width: 320px; border: 1px solid #ddd; border-radius: 6px; }
+      .status { font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <h1>Image Pipeline API Tester</h1>
+    <div class="muted">Use this page to upload images and test all backend endpoints.</div>
+
+    <div class="card">
+      <h3>1) Upload Image (POST /api/images)</h3>
+      <div class="row">
+        <input id="uploadFile" type="file" accept="image/jpeg,image/png" />
+        <button id="uploadBtn">Upload</button>
+      </div>
+      <p class="status" id="uploadStatus"></p>
+      <pre id="uploadOut">No request yet.</pre>
+    </div>
+
+    <div class="card">
+      <h3>2) Query by Image ID</h3>
+      <div class="row">
+        <input id="imageId" type="text" placeholder="Enter image id (e.g. img123...)" />
+        <button id="detailsBtn">GET /api/images/{id}</button>
+        <button id="smallBtn">GET small thumbnail</button>
+        <button id="mediumBtn">GET medium thumbnail</button>
+      </div>
+      <pre id="detailsOut">No request yet.</pre>
+      <div class="row">
+        <div>
+          <div>Small thumbnail</div>
+          <img id="smallImg" alt="small thumbnail" />
+        </div>
+        <div>
+          <div>Medium thumbnail</div>
+          <img id="mediumImg" alt="medium thumbnail" />
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>3) List + Stats</h3>
+      <div class="row">
+        <button id="listBtn">GET /api/images</button>
+        <button id="statsBtn">GET /api/stats</button>
+      </div>
+      <h4>List Output</h4>
+      <pre id="listOut">No request yet.</pre>
+      <h4>Stats Output</h4>
+      <pre id="statsOut">No request yet.</pre>
+    </div>
+
+    <script>
+      const uploadBtn = document.getElementById('uploadBtn');
+      const uploadFile = document.getElementById('uploadFile');
+      const uploadOut = document.getElementById('uploadOut');
+      const uploadStatus = document.getElementById('uploadStatus');
+      const imageId = document.getElementById('imageId');
+      const detailsBtn = document.getElementById('detailsBtn');
+      const smallBtn = document.getElementById('smallBtn');
+      const mediumBtn = document.getElementById('mediumBtn');
+      const detailsOut = document.getElementById('detailsOut');
+      const listBtn = document.getElementById('listBtn');
+      const statsBtn = document.getElementById('statsBtn');
+      const listOut = document.getElementById('listOut');
+      const statsOut = document.getElementById('statsOut');
+      const smallImg = document.getElementById('smallImg');
+      const mediumImg = document.getElementById('mediumImg');
+
+      function pretty(data) {
+        return JSON.stringify(data, null, 2);
+      }
+
+      async function getJson(path) {
+        const resp = await fetch(path);
+        const data = await resp.json();
+        return { ok: resp.ok, status: resp.status, data };
+      }
+
+      uploadBtn.addEventListener('click', async () => {
+        const file = uploadFile.files?.[0];
+        if (!file) {
+          uploadStatus.textContent = 'Please choose a JPG or PNG file first.';
+          return;
+        }
+
+        const form = new FormData();
+        form.append('file', file);
+
+        uploadStatus.textContent = 'Uploading...';
+        const resp = await fetch('/api/images', { method: 'POST', body: form });
+        const data = await resp.json();
+        uploadOut.textContent = pretty(data);
+
+        if (data?.data?.image_id) {
+          imageId.value = data.data.image_id;
+        }
+
+        uploadStatus.textContent = `HTTP ${resp.status}`;
+      });
+
+      detailsBtn.addEventListener('click', async () => {
+        const id = imageId.value.trim();
+        if (!id) return;
+        const result = await getJson(`/api/images/${id}`);
+        detailsOut.textContent = `HTTP ${result.status}\n` + pretty(result.data);
+      });
+
+      smallBtn.addEventListener('click', () => {
+        const id = imageId.value.trim();
+        if (!id) return;
+        smallImg.src = `/api/images/${id}/thumbnails/small?ts=${Date.now()}`;
+      });
+
+      mediumBtn.addEventListener('click', () => {
+        const id = imageId.value.trim();
+        if (!id) return;
+        mediumImg.src = `/api/images/${id}/thumbnails/medium?ts=${Date.now()}`;
+      });
+
+      listBtn.addEventListener('click', async () => {
+        const result = await getJson('/api/images');
+        listOut.textContent = `HTTP ${result.status}\n` + pretty(result.data);
+      });
+
+      statsBtn.addEventListener('click', async () => {
+        const result = await getJson('/api/stats');
+        statsOut.textContent = `HTTP ${result.status}\n` + pretty(result.data);
+      });
+    </script>
+  </body>
+</html>

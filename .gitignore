@@ -1,0 +1,27 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.DS_Store
+.coverage
+
+# Generated artifacts
+dist/
+build/
+reports/output/
+app.db
+
+# Runtime storage
+storage/originals/*
+!storage/originals/.gitkeep
+storage/thumbnails/small/*
+!storage/thumbnails/small/.gitkeep
+storage/thumbnails/medium/*
+!storage/thumbnails/medium/.gitkeep
+
+# Data files (keep directories, not large artifacts)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
