@@ -124,6 +124,15 @@ Navigate to **http://127.0.0.1:8000/** in your browser. The UI lets you:
 - List all images
 - View processing stats
 
+### Interactive API Documentation
+
+FastAPI auto-generates interactive docs from the Pydantic response models:
+
+| URL | Description |
+|-----|-------------|
+| http://127.0.0.1:8000/docs | Swagger UI — try out every endpoint from the browser |
+| http://127.0.0.1:8000/redoc | ReDoc — alternative read-only documentation |
+
 ### Alternative run commands
 
 ```bash
@@ -369,6 +378,25 @@ docker run --rm -p 8000:8000 digital-forensics-api
 ```
 
 Then open http://localhost:8000/ in your browser.
+
+---
+
+## Further Improvements
+
+Given more time, the following enhancements could be added:
+
+| Improvement | Description |
+|-------------|-------------|
+| **Rate limiting** | Throttle uploads per client to prevent abuse (e.g. `slowapi`) |
+| **File-size limits** | Reject uploads above a configurable max size before processing |
+| **CORS middleware** | Allow cross-origin requests for front-end apps on different domains |
+| **Pagination** | Add `limit`/`offset` query params to `GET /api/images` for large datasets |
+| **Authentication** | API-key or OAuth2 to restrict access |
+| **Image deduplication** | Hash-based detection to avoid storing duplicate uploads |
+| **Webhook / SSE notifications** | Push processing results to clients instead of polling |
+| **S3 / cloud storage** | Replace local filesystem with object storage for scalability |
+| **Batch uploads** | Accept multiple images in a single request |
+| **Configurable thumbnail sizes** | Let callers request arbitrary dimensions |
 
 ---
 

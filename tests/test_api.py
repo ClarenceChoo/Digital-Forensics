@@ -3,6 +3,7 @@ from io import BytesIO
 
 import pytest
 from PIL import Image
+from starlette.testclient import TestClient
 
 
 def create_image_bytes(image_format: str) -> bytes:
@@ -150,3 +151,29 @@ def test_exif_data_extracted(client) -> None:
     assert "exif" in metadata, "EXIF data should be present in metadata"
     assert metadata["exif"]["Make"] == "TestCamera"
     assert metadata["exif"]["Model"] == "Model X"
+
+
+def test_failed_processing(client: TestClient) -> None:
+    """Upload a file that passes initial validation but is actually corrupt,
+    resulting in a failed processing status and error message."""
+    # Create a valid JPEG that Pillow can open (passes validation),
+    # then truncate it so that thumbnail generation / full decode fails.
+    valid_bytes = create_image_bytes("JPEG")
+    # Keep just enough for Pillow to identify it but not enough to decode
+    truncated = valid_bytes[: len(valid_bytes) // 4]
+
+    response = client.post(
+        "/api/images",
+        files={"file": ("corrupt.jpg", truncated, "image/jpeg")},
+    )
+
+    assert response.status_code == 202
+    image_id = response.json()["data"]["image_id"]
+    final_payload = wait_for_completion(client, image_id)
+
+    assert final_payload["status"] == "failed", "Corrupt image should result in failed status"
+    assert final_payload["error"], "Error message should be present"
+
+    # Stats should reflect the failure
+    stats = client.get("/api/stats").json()
+    assert stats["failed"] >= 1
