@@ -345,6 +345,7 @@ Client                           Server
 │   │   ├── image_pipeline.py      # Image processing, thumbnails, metadata, EXIF
 │   │   └── captioning.py          # BLIP AI caption service + fallback
 │   ├── models.py                  # SQLAlchemy ORM model (ImageRecord)
+│   ├── schemas.py                 # Pydantic response models
 │   ├── database.py                # DB engine and session factory
 │   ├── config.py                  # Paths, sizes, supported formats
 │   ├── ui/
@@ -353,7 +354,8 @@ Client                           Server
 │   └── __init__.py
 ├── tests/
 │   ├── conftest.py                # Test fixtures (client, DB reset)
-│   └── test_api.py                # 7 API tests
+│   ├── test_api.py                # API tests
+│   └── test_smoke.py              # Import smoke test
 ├── scripts/
 │   └── demo.sh                    # One-command end-to-end demo
 ├── storage/                       # Created at runtime
@@ -373,8 +375,12 @@ Client                           Server
 ## Docker (Bonus)
 
 ```bash
+# Build with AI captioning (default)
 docker build -t digital-forensics-api .
 docker run --rm -p 8000:8000 digital-forensics-api
+
+# Build without AI captioning (smaller image)
+docker build --build-arg INSTALL_EXTRAS="" -t digital-forensics-api .
 ```
 
 Then open http://localhost:8000/ in your browser.

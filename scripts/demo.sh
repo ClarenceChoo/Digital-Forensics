@@ -13,23 +13,23 @@ cleanup() {
 }
 trap cleanup EXIT
 
-/usr/local/bin/python3 -m uvicorn digital_forensics.api.app:app --host "$HOST" --port "$PORT" >/tmp/forensics_api.log 2>&1 &
+python3 -m uvicorn digital_forensics.api.app:app --host "$HOST" --port "$PORT" >/tmp/forensics_api.log 2>&1 &
 SERVER_PID=$!
 
 sleep 1
 
-/usr/local/bin/python3 -c "from PIL import Image; Image.new('RGB',(640,480),(12,34,200)).save('sample.jpg','JPEG')"
+python3 -c "from PIL import Image; Image.new('RGB',(640,480),(12,34,200)).save('sample.jpg','JPEG')"
 
 UPLOAD_RESPONSE=$(curl -s -X POST "${BASE_URL}/api/images" -F "file=@sample.jpg")
 echo "Upload: ${UPLOAD_RESPONSE}"
 
-IMAGE_ID=$(/usr/local/bin/python3 -c "import json,sys; print(json.loads(sys.argv[1])['data']['image_id'])" "$UPLOAD_RESPONSE")
+IMAGE_ID=$(python3 -c "import json,sys; print(json.loads(sys.argv[1])['data']['image_id'])" "$UPLOAD_RESPONSE")
 
 echo "Image ID: ${IMAGE_ID}"
 
 for _ in {1..30}; do
   DETAILS=$(curl -s "${BASE_URL}/api/images/${IMAGE_ID}")
-  STATUS=$(/usr/local/bin/python3 -c "import json,sys; print(json.loads(sys.argv[1])['status'])" "$DETAILS")
+  STATUS=$(python3 -c "import json,sys; print(json.loads(sys.argv[1])['status'])" "$DETAILS")
   if [[ "$STATUS" == "success" || "$STATUS" == "failed" ]]; then
     break
   fi
